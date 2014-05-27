@@ -1,0 +1,55 @@
+{{extend 'layout.html'}}
+<table class="index_table">
+<tr><td>Nama Lengkap</td><td>{{=tenant[0].tenant.nama_lengkap}}</td></tr>
+<tr><td>Alamat Lengkap</td><td>{{=tenant[0].tenant.alamat_lengkap}}</td></tr>
+<tr><td>Kota Asal</td><td>{{=tenant[0].tenant.kota_asal}}</td></tr>
+<tr><td>No Tel Selular</td><td>{{=tenant[0].tenant.no_tel_selular}}</td></tr>
+<tr><td>No Tel Rumah</td><td>{{=tenant[0].tenant.no_tel_rumah}}</td></tr>
+<tr><td>No Tel Kantor</td><td>{{=tenant[0].tenant.no_tel_kantor}}</td></tr>
+<tr><td>eMail</td><td>{{=tenant[0].tenant.email}}</td></tr>
+<tr><td>Tempat Tanggal Lahir</td><td>{{=tenant[0].tenant.tmp_tgl_lahir}}</td></tr>
+<tr><td>Status</td><td>{{=tenant[0].status.status}}</td></tr>
+<tr><td>Catatan</td><td>{{=tenant[0].tenant.catatan}}</td></tr>
+<tr><td></td><td>{{=A('[Edit]',_href=URL('tenant','edit',args=tenant[0].tenant.id))}}</td></tr>
+</table>
+
+<br>
+<h4>Sewa</h4>
+{{=A('Tambah',_href=URL('lease','add',vars={'tenant':tenant[0].tenant.id,'unit':unit}))}}
+<table class="view_related">
+<th>Sewa Awal</th>
+<th>Sewa Akhir</th>
+<th>Frequency</th>
+<th>Jumlah</th>
+<th>Action</th>
+{{for l in lease:}}
+<tr> 
+<td>{{=l.lease.sewa_awal}} </td>
+<td>{{=l.lease.sewa_akhir}} </td>
+<td>{{=l.frequency.frequency}} </td>
+<td>{{=l.lease.harga_sewa}}</td>
+    <td>{{=A('[Detail]',_href=URL('lease','view',args=l.lease.id))}}
+        {{=A('[Bayar]',_href=URL('accounting','add',vars={'tenant':tenant[0].tenant.id,'unit':unit,'lease':l.lease.id,'sewaakhir':l.lease.sewa_akhir,'harga_sewa':l.lease.harga_sewa}))}}
+    
+    </td>
+</tr>
+{{pass}}
+</table>
+
+<br>
+<h4>Accounting</h4>
+{{=A('Tambah Pembayaran',_href=URL('accounting','add',vars={'tenant':tenant[0].tenant.id,'unit':unit}))}}
+<table class="view_related">
+<th>Tanggal Terima</th>
+<th>Type</th>
+<th>Jumlah</th>
+<th>Notes</th>
+{{for a in accounting:}}
+<tr>
+<td>{{=a.tgl_di_bayar}}</td>
+<td>{{=a.typepayment}}</td>
+<td>{{=a.jumlah_di_bayar}}</td>
+<td>{{=a.notes}}</td>
+</tr>
+{{pass}}
+</table>

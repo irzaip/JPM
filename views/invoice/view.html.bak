@@ -1,0 +1,24 @@
+{{extend 'layout.html'}}
+
+<table class="index_table">
+<tr><td>User</td><td>{{=inv}}</td></tr>
+<tr><td>Nama Lengkap</td><td>{{=inv.nama_lengkap}}</td></tr>
+<tr><td>Tenant</td><td>{{=inv.tgl_mulai}}</td></tr>
+<tr><td>Available</td><td>{{=inv.tgl_selesai}}</td></tr>
+<tr><td>Keterangan</td><td>{{=inv.keterangan}}</td></tr>
+</table>
+
+<h4>Detail</h4>
+<table class="view_related">
+<th>Keterangan</th>
+<th>Jumlah</th>
+<th>Action</th>
+
+{{for l in detail:}}
+<tr> 
+<td>{{=l.keterangan}}</td>
+<td>{{=l.jumlah}} </td>
+<td><a href="/jpm/invoice/viewdetail/{{=l.id}}">[View]</a></td>
+</tr>
+{{pass}}
+</table>

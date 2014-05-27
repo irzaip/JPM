@@ -1,0 +1,15 @@
+{{extend 'layout.html'}}
+<table class="index_table">
+
+<th>Id</th>
+<th>Type</th>
+<th>action</th>
+
+{{for row in rows:}}
+<tr> 
+<td>{{=row.id}} </td>
+<td>{{=row.typepayment}} </td>
+<td><a href="/jpm/typepayment/view/{{=row.id}}">[View]</a> <a href="/jpm/typepayment/edit/{{=row.id}}">[Edit]</a></td>
+</tr>
+{{pass}}
+</table>

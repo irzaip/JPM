@@ -1,0 +1,89 @@
+# coding: utf8
+# try something like
+def index(): 
+    response.title="Receipt / Tanda Terima"
+    response.subtitle="Daftar seluruh tanda terima pembayaran"
+    
+    rows = db((db.receipt.id>0) & (db.tenant.id==db.receipt.tenant)).select()
+    if not rows: raise HTTP(404)
+    
+    return dict(rows=rows)
+    
+    
+def view():
+    response.view="Lihat Receipt"
+    response.subtitle="Melihat detail Receipt / Tanda Terima"
+    response.view="receipt/view.html"
+    
+    ids = request.args[0]
+    rcp = db((db.receipt.id==ids) & (db.tenant.id==db.receipt.tenant)).select()
+    if not rcp: raise HTTP(404)
+   
+    detail = db(db.receipt_item.receipt==ids).select()
+    
+    return dict(rcp=rcp, detail=detail)
+
+def add():
+    response.title="Tambah Receipt"
+    response.subtitle="menambah tanda terima / receipt"
+    
+    form=SQLFORM(db.receipt,fields=['user','tenant','tgl_bayar'])
+    
+    my_extra = [TR(LABEL('Keterangan'),LABEL('Jumlah'))]
+    for i in range(1,5):
+        ket = 'keterangan' + str(i)
+        jum = 'jumlah' + str(i)
+        my_extra.append(TR(INPUT(_name=ket),INPUT(_name=jum,requires=IS_EMPTY_OR(IS_INT_IN_RANGE(1,9999999999,error_message="Harus Angka")))))
+  
+    my_extra_element = TR(my_extra)
+    
+    #menambah element keterangan dan jumlah ke dalam SQLFORM
+    form[0].insert(-1,my_extra_element)
+    
+    
+    if form.validate():
+        if form.vars['keterangan1']:
+            form.vars.keterangan = form.vars['keterangan1']
+        id = db.receipt.insert(**db.receipt._filter_fields(form.vars))
+        form.vars.receipt = id
+        
+        total_jumlah = 0
+        #masukkan data satu persatu
+        for i in range(1,5):
+            ket = 'keterangan' + str(i)
+            jum = 'jumlah' + str(i)
+            
+            #ambil isi form.vars
+            fvk = form.vars[ket]
+            fvj = form.vars[jum]
+
+            #buat total jumlah
+            if fvj:
+                total_jumlah=total_jumlah + fvj
+                
+            if (fvk and fvj):
+                id = db.receipt_item.insert(receipt=form.vars.receipt,keterangan=fvk,jumlah=fvj)
+        
+        db(db.receipt.id==form.vars.receipt).update(jumlah=total_jumlah)
+        
+        response.flash = "Berhasil tambah record:" + str(form.vars.receipt)
+
+    return dict(form=form)
+
+def edit():
+    response.title="Edit Receipt"
+    response.subtitle="Merubah Tanda Terima"
+    
+    ids=request.args[0]
+    
+    form = SQLFORM(db.receipt)
+    
+    if form.validate():
+        if form.deleted:
+            db(db.receipt_item.receipt==ids).delete()
+            response.flash = "Data Deleted - Record:" + str(ids)
+            
+        response.flash = "Data Update - Record" + str(ids)
+        redirect(URL('receipt','index'))
+        
+    return dict(form=crud.update(db.receipt,ids))

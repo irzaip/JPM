@@ -1,0 +1,66 @@
+# coding: utf8
+# try something like
+@auth.requires_login()
+def index():
+    def mylink(field, type, ref):
+        return URL(args=[field])
+        
+    response.title = "Daftar Unit Sewa"
+    response.subtitle= "mencakup semua unit sewa dengan segala status"
+    
+    #update available unit   
+    query = (db.unit.tenant > 1)
+    set = db(query)
+    set.update(available=False)
+    
+    
+    #dbref=db 
+    #qry=(db.unit.id>0)
+    headers=['Nama','Tenant','Available','Sewa Akhir']
+    #fields=['nama_unit','tenant','available'] 
+    #sel=[db.unit[field] for field in fields] 
+    #rows=SQLTABLE(dbref(qry).select(*sel))
+    rows=db((db.unit.id>0) & (db.unit.tenant==db.tenant.id) & ((db.lease.tenant==db.unit.tenant))).select()
+    
+    return dict(rows=rows,headers=headers)
+
+
+@auth.requires_login()
+def add():
+    response.title="Tambahkan Unit"
+    response.subtitle="Bagaimanapun juga anda harus unit sewa sekarang juga."
+    form=SQLFORM(db.unit,submit_button="Tambahkan Unit")
+        
+    if form.accepts(request,session):
+        response.flash = 'form accepted'
+    elif form.errors:
+        response.flash = 'form has errors'
+    else:
+        response.flash = 'please fill the form'
+    return dict(form=form)
+    
+
+@auth.requires_login()
+def edit():
+    response.title="Edit Unit"
+    response.subtitle="Merubah data Unit"
+    
+    ids = request.args[0]
+    unit = db(db.unit.id==ids)
+    if not unit: raise HTTP(404)
+    
+    return dict(form=crud.update(db.unit,ids))
+    
+    
+@auth.requires_login()
+def view():
+    response.title="Detail Unit"
+    response.subtitle="Melihat detail informasi Unit"
+    
+    ids = request.args[0]
+    unit = db((db.unit.id==ids) & (db.tenant.id==db.unit.tenant) & (db.building.id==db.unit.building)).select()
+    #if not unit: raise HTTP(404)
+    
+    lease = db((db.lease.unit==ids) & (db.tenant.id == db.lease.tenant) & (db.lease.frequency==db.frequency.id)).select()
+    
+    return dict(unit=unit,lease=lease)

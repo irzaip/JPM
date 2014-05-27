@@ -1,0 +1,6 @@
+# coding: utf8
+
+@auth.requires_login()
+def index():
+    grid = SQLFORM.smartgrid(db.devidend)
+    return locals()

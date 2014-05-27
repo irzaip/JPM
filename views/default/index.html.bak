@@ -1,0 +1,26 @@
+{{left_sidebar_enabled,right_sidebar_enabled=False,True}}
+
+{{extend 'layout.html'}}
+
+<table class="index_table">
+<th>Tanggal</th>
+<th>Keterangan</th>
+<th>Status Pekerjaan</th>
+<th>Prioritas</th>
+<th>action</th>
+
+{{for row in todo:}}
+
+<tr> 
+<td>{{=row.todo.tanggal}} </td>
+<td>{{=row.todo.keterangan}} </td>
+<td>{{=row.todo.status_pekerjaan}} </td>
+<td>{{=row.priority.priority}} </td>
+<td><a href="{{=row.todo.url}}">[View]</a></td>
+</tr>
+{{pass}}
+</table>
+
+{{block right_sidebar}}
+
+{{end}}

@@ -1,0 +1,57 @@
+# coding: utf8
+# try something like
+@auth.requires_login()
+def index():
+    response.title = "Daftar Nama Vendor"
+    response.subtitle= "mencakup semua vendor yang kita gunakan."
+    
+    dbref=db 
+    qry=(db.vendor)
+    headers=['Nama Usaha','Nama Kontak','No Tel Kantor','No Tel Kontak']
+    fields=['nama_usaha','nama_kontak','no_tel_kantor','no_tel_kontak'] 
+    sel=[db.vendor[field] for field in fields] 
+    #rows=SQLTABLE(dbref(qry).select(*sel))
+    rows=db(db.vendor).select()
+    return dict(rows=rows,headers=headers)
+
+
+@auth.requires_login()
+def add():
+    response.title="Tambahkan tenant"
+    response.subtitle="Bagaimanapun juga anda harus menambah tenant sekarang juga."
+    form=SQLFORM(db.tenant,submit_button="Tambahkan Tenant")
+        
+    if form.accepts(request,session):
+        response.flash = 'form accepted'
+    elif form.errors:
+        response.flash = 'form has errors'
+    else:
+        response.flash = 'please fill the form'
+    return dict(form=form)
+    
+
+@auth.requires_login()
+def edit():
+    response.title="Edit Tenant"
+    response.subtitle="Merubah data tenant"
+    
+    ids = request.args[0]
+    tenant = db(db.tenant.id==ids)
+    if not tenant: raise HTTP(404)
+    
+    return dict(form=crud.update(db.tenant,ids))
+    
+    
+@auth.requires_login()
+def view():
+    response.title="Detail Tenant"
+    response.subtitle="Melihat detail informasi Pelanggan"
+    
+    ids = request.args[0]
+    tenant = db(db.tenant.id==ids)
+    if not tenant: raise HTTP(404)
+    
+    
+    lease = db((db.lease.tenant==ids) & (db.frequency.id == db.lease.frequency)).select()
+    
+    return dict(form=crud.read(db.tenant,ids),lease=lease)

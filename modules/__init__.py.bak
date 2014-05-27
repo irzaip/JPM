@@ -1,0 +1,6 @@
+from gluon import *
+import datetime
+
+def insert_todo():
+    db.todo.insert(tanggal=now,keterangan="Tanggal",status_pekerjaan="1",priority="1",url="/jpm/")
+    return

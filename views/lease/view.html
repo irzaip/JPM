@@ -1,0 +1,13 @@
+{{extend 'layout.html'}}
+<a href="/jpm/lease/edit/{{=lease[0].lease.id}}">[Edit]</a>
+<table class="index_table">
+<tr><td>Tenant</td><td><a href="/jpm/tenant/view/{{=lease[0].lease.tenant}}">{{=lease[0].tenant.nama_lengkap}}</a></td></tr>
+<tr><td>Unit</td><td><a href="/jpm/unit/view/{{=lease[0].lease.unit}}">{{=lease[0].unit.nama_unit}}</a></td></tr>
+<tr><td>Tgl Masuk</td><td>{{=lease[0].lease.tgl_masuk}}</td></tr>
+<tr><td>Tgl Keluar</thd><td>{{=lease[0].lease.tgl_keluar}}</td></tr>
+<tr><td>Sewa Awal</td><td>{{=lease[0].lease.sewa_awal}}</td></tr>
+<tr><td>Sewa Akhir</td><td>{{=lease[0].lease.sewa_akhir}}</td></tr>
+<tr><td>Frequency</td><td>{{=lease[0].frequency.frequency}}</td></tr>
+<tr><td>Harga Sewa</td><td>{{=lease[0].lease.harga_sewa}}</td></tr>
+<tr><td>Keterangan</td><td>{{=lease[0].lease.keterangan}}</td></tr>
+</table>

@@ -1,0 +1,21 @@
+{{extend 'layout.html'}}
+{{"""
+You should not modify this file. 
+It is used as default when a view is not provided for your controllers
+
+"""}}
+<table class="index_table">
+{{for header in headers:}}
+<th>{{=header}}</th>
+{{pass}}
+<th>action</th>
+{{for row in rows:}}
+
+<tr> 
+<td>{{=row.tenant.nama_lengkap}} </td>
+<td>{{=row.tenant.alamat_lengkap}} </td>
+<td>{{=row.status.status}} </td>
+<td><a href="/jpm/tenant/view/{{=row.tenant.id}}">[View]</a> <a href="/jpm/tenant/edit/{{=row.tenant.id}}">[Edit]</a></td>
+</tr>
+{{pass}}
+</table>

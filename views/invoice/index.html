@@ -1,0 +1,21 @@
+{{extend 'layout.html'}}
+<a href="/jpm/invoice/add/">[Add]</a>
+<table class="index_table">
+
+<th>User</th>
+<th>Tenant</th>
+<th>Tgl Mulai</th>
+<th>Tgl Selesai</th>
+<th>action</th>
+
+{{for row in rows:}}
+
+<tr> 
+<td>{{=row.invoice.user}} </td>
+<td>{{=row.tenant.nama_lengkap}} </td>
+<td>{{=row.invoice.tgl_mulai}} </td>
+<td>{{=row.invoice.tgl_selesai}}</td>
+<td><a href="/jpm/invoice/view/{{=row.invoice.id}}">[View]</a> <a href="/jpm/invoice/edit/{{=row.invoice.id}}">[Edit]</a></td>
+</tr>
+{{pass}}
+</table>

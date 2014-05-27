@@ -1,0 +1,21 @@
+{{extend 'layout.html'}}
+<a href="/jpm/lease/add/">[Add]</a>
+<table class="index_table">
+{{for header in headers:}}
+<th>{{=header}}</th>
+{{pass}}
+<th>action</th>
+{{for row in rows:}}
+
+<tr> 
+<td>{{=row.tenant.nama_lengkap}} </td>
+<td>{{=row.unit.nama_unit}} </td>
+<td>{{=row.lease.sewa_awal}} </td>
+<td>{{=row.lease.sewa_akhir}} </td>
+<td>{{=row.frequency.frequency}} </td>
+<td>{{=row.lease.harga_sewa}} </td>
+
+<td><a href="/jpm/lease/view/{{=row.lease.id}}">[View]</a> <a href="/jpm/lease/edit/{{=row.lease.id}}">[Edit]</a></td>
+</tr>
+{{pass}}
+</table>

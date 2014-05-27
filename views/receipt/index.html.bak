@@ -1,0 +1,22 @@
+{{extend 'layout.html'}}
+
+<a href="/jpm/receipt/add/">[Add]</a>
+<table class="index_table">
+
+<th>User</th>
+<th>Tenant</th>
+<th>Tgl Bayar</th>
+<th>Keterangan</th>
+<th>action</th>
+
+{{for row in rows:}}
+
+<tr> 
+<td>{{=row.receipt.user}} </td>
+<td>{{=row.tenant.nama_lengkap}} </td>
+<td>{{=row.receipt.tgl_bayar}} </td>
+<td>{{=row.receipt.keterangan}}</td>
+<td><a href="/jpm/receipt/view/{{=row.receipt.id}}">[View]</a> <a href="/jpm/receipt/edit/{{=row.receipt.id}}">[Edit]</a></td>
+</tr>
+{{pass}}
+</table>

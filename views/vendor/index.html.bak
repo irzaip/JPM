@@ -1,0 +1,18 @@
+{{extend 'layout.html'}}
+<a href="/jpm/vendor/add/">[Add]</a>
+<table class="index_table">
+{{for header in headers:}}
+<th>{{=header}}</th>
+{{pass}}
+<th>action</th>
+{{for row in rows:}}
+
+<tr> 
+<td>{{=row.nama_usaha}} </td>
+<td>{{=row.nama_kontak}} </td>
+<td>{{=row.no_tel_kantor.}} </td>
+<td>{{=row.no_tel_kontak.}} </td>
+<td><a href="/jpm/vendor/view/{{=row.id}}">[View]</a> <a href="/jpm/vendor/edit/{{=row.id}}">[Edit]</a></td>
+</tr>
+{{pass}}
+</table>
