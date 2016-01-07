@@ -102,8 +102,8 @@ auth.define_tables()
 ## configure email
 mail=auth.settings.mailer
 mail.settings.server = 'smtp.gmail.com:25'
-mail.settings.sender = 'irzaip@gmail.com'
-mail.settings.login = 'irzaip:sysonez10'
+mail.settings.sender = 'ir@gmail.com'
+mail.settings.login = 'irzaip:sys'
 
 ## configure auth policy
 auth.settings.registration_requires_verification = True
