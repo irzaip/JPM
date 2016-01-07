@@ -3,6 +3,7 @@
 
 @auth.requires_login()
 def index():
+
     response.title = "Daftar Nama Tenant"
     response.subtitle= "mencakup semua tenant lampau/pelanggan/prospek."
     #response.view="main.html"
@@ -53,22 +54,22 @@ def checkin():
       form.vars = db.tenant[request.vars.tenant]
       #isi menjadi pelanggan
       form.vars.status = 3
-        
+
     if form.accepts(request,session):
         response.flash = 'Berhasil'
-        
+
         #update tenant di tabel unit
         query = (db.unit.id == request.vars.unit)
         set = db(query)
         set.update(tenant=form.vars.id,available=False)
-        
+
         redirect(URL('unit','index'))
-        
-        
+
     elif form.errors:
         response.flash = 'Ada kesalahan pengisian'
     else:
         response.flash = 'isi form dibawah ini'
+
     return dict(form=form)
 
 
@@ -177,13 +178,15 @@ def bookcancel():
     
 @auth.requires_login()
 def view():
+
     response.title="Detail Tenant"
     response.subtitle="Melihat detail informasi Pelanggan"
     
     ids = request.args[0]
+    
     tenant = db((db.tenant.id==ids) & (db.status.id == db.tenant.status)).select()
     if not tenant: raise HTTP(404)
-    
+
     query = (db.unit.tenant == tenant[0].tenant.id)
     set = db(query)
     rows = set.select()
@@ -193,9 +196,56 @@ def view():
       unit = rows[0].id
     
     #lihat kontrak sewa
-    lease = db((db.lease.tenant==ids) & (db.frequency.id == db.lease.frequency)).select()
+    lease = db((db.lease.tenant==ids) & (db.frequency.id == db.lease.frequency)).select(orderby=~db.lease.sewa_akhir)
     
     #lihat pembayaran dan akunting
-    accounting = db(db.accounting.tenant==ids).select()
-        
-    return dict(tenant=tenant,lease=lease,unit=unit,accounting=accounting,ids=ids)
+    accounting = db((db.accounting.tenant==ids) & (db.typepayment.id == db.accounting.typepayment)).select(orderby=~db.accounting.tgl_di_bayar)
+    uploads = db(db.uploads.tenant == ids).select()
+    
+    return dict(tenant=tenant,lease=lease,unit=unit,accounting=accounting,ids=ids,uploads=uploads)
+
+
+def makeThumbnail(dbtable,ImageID,size=(150,150)):
+    try:    
+        thisImage=db(dbtable.id==ImageID).select()[0]
+        import os, uuid
+        from PIL import Image
+    except: return
+    im=Image.open(request.folder + 'uploads/' + thisImage.mainfile)
+    im.thumbnail(size,Image.ANTIALIAS)
+    thumbName='uploads.thumb.%s.jpg' % (uuid.uuid4())
+    im.save(request.folder + 'uploads/' + thumbName,'jpeg')
+    thisImage.update_record(thumb=thumbName)
+    return 
+
+def uploadimage():
+    
+    ids = request.args[0]
+    
+    dbtable = db.uploads          #uploads table name
+    if len(request.args):
+        records = db(dbtable.id==request.args[0]).select()
+    if len(request.args) and len(records):
+        form = SQLFORM(dbtable, records[0], deletable=True)
+    else:
+        form = SQLFORM(dbtable)
+        form.vars.tenant = ids
+        form.vars.jenis = "Identitas"
+    if form.accepts(request.vars, session): 
+        response.flash = 'form accepted'
+        makeThumbnail(dbtable,form.vars.id,(175,175))
+        redirect(URL('tenant','index'))
+    elif form.errors:
+        response.flash = 'form has errors'
+   
+    return dict(form=form)
+
+def viewimage():
+   response.title = request.vars.nama
+   response.subtitle = request.vars.jenis
+   ids = request.args[0]
+   
+   table = db(db.uploads.id==ids).select()
+
+   if not table: raise HTTP(404)
+   return dict(tables=table)

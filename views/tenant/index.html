@@ -1,11 +1,7 @@
 {{extend 'layout.html'}}
-{{"""
-You should not modify this file. 
-It is used as default when a view is not provided for your controllers
 
-"""}}
-<a href="/jpm/tenant/add/">[Add]</a>
-<table class="index_table">
+<a href="/jpm/tenant/add/"  class="ui-btn ui-btn-inline">[Add]</a>
+<table id="index_table">
 {{for header in headers:}}
 <th>{{=header}}</th>
 {{pass}}
@@ -16,7 +12,7 @@ It is used as default when a view is not provided for your controllers
 <td>{{=row.tenant.nama_lengkap}} </td>
 <td>{{=row.tenant.alamat_lengkap}} </td>
 <td>{{=row.status.status}} </td>
-<td><a href="/jpm/tenant/view/{{=row.tenant.id}}">[View]</a> <a href="/jpm/tenant/edit/{{=row.tenant.id}}">[Edit]</a></td>
+<td><a href="/jpm/tenant/view/{{=row.tenant.id}}" class="ui-btn ui-btn-inline ui-mini">View</a> <a href="/jpm/tenant/edit/{{=row.tenant.id}}" class="ui-btn ui-btn-inline ui-mini">Edit</a></td>
 </tr>
 {{pass}}
 </table>

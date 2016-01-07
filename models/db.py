@@ -1,5 +1,58 @@
 # -*- coding: utf-8 -*-
+from decimal import Decimal
+def moneyfmt(value, places=0, curr='', sep='.', dp=',', pos='', neg='-', trailneg=''):
+    """Convert Decimal to a money formatted string.
 
+    places:  required number of places after the decimal point
+    curr:    optional currency symbol before the sign (may be blank)
+    sep:     optional grouping separator (comma, period, space, or blank)
+    dp:      decimal point indicator (comma or period)
+             only specify as blank when places is zero
+    pos:     optional sign for positive numbers: '+', space or blank
+    neg:     optional sign for negative numbers: '-', '(', space or blank
+    trailneg:optional trailing minus indicator:  '-', ')', space or blank
+
+    >>> d = Decimal('-1234567.8901')
+    >>> moneyfmt(d, curr='$')
+    '-$1,234,567.89'
+    >>> moneyfmt(d, places=0, sep='.', dp='', neg='', trailneg='-')
+    '1.234.568-'
+    >>> moneyfmt(d, curr='$', neg='(', trailneg=')')
+    '($1,234,567.89)'
+    >>> moneyfmt(Decimal(123456789), sep=' ')
+    '123 456 789.00'
+    >>> moneyfmt(Decimal('-0.02'), neg='<', trailneg='>')
+    '<0.02>'
+
+    """
+    q = Decimal(10) ** -places      # 2 places --> '0.01'
+    sign, digits, exp = value.quantize(q).as_tuple()
+    result = []
+    digits = map(str, digits)
+    build, next = result.append, digits.pop
+
+    if places == 0:
+        dp = ''
+
+    if sign:
+        build(trailneg)
+    for i in range(places):
+        build(next() if digits else '0')
+
+    build(dp)
+    if not digits:
+        build('0')
+
+    i = 0
+    while digits:
+        build(next())
+        i += 1
+        if i == 3 and digits:
+            i = 0
+            build(sep)
+    build(curr)
+    build(neg if sign else pos)
+    return ''.join(reversed(result))
 #########################################################################
 ## This scaffolding model makes your app work on Google App Engine too
 ## File is released under public domain and you can use without limitations
@@ -241,6 +294,20 @@ db.define_table('invoice_item',
     Field('invoice',requires=IS_IN_DB(db,db.invoice,'%(id)s',error_message="Harus di isi")),
     Field('keterangan',length=100),
     Field('jumlah','integer'))
+
+db.define_table('uploads',
+    Field('tenant',requires=IS_IN_DB(db,db.tenant,'%(nama_lengkap)s',error_message="Harus di isi")),
+    Field('jenis','string'),
+    Field('mainfile','upload'),
+    Field('thumb','upload',writable=False,readable=False),
+    )
+
+db.define_table('tesme',
+    Field('tenant',requires=IS_IN_DB(db,db.tenant,'%(nama_lengkap)s',error_message="Harus di isi"),label="Nama Tenant",comment="Mohon di isi nama lengkap"),
+    Field('jenis','string'),
+    )
+
+
 
 db.user.user.requires = IS_NOT_EMPTY()
 db.user.email.requires = [IS_EMAIL(), IS_NOT_IN_DB(db, 'user.email')]

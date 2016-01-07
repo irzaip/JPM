@@ -1,0 +1,320 @@
+(dp1
+S'output'
+p2
+S"<type 'exceptions.AttributeError'> 'NoneType' object has no attribute 'sewa_akhir'"
+p3
+sS'layer'
+p4
+S'D:\\web2py\\applications\\JPM\\controllers/lease.py'
+p5
+sS'code'
+p6
+S'import datetime\nfrom datetime import date\n\n\n# coding: utf8\n# try something like\n@auth.requires_login()\ndef index():\n    response.title = "Daftar Lease / Perjanjian Sewa"\n    response.subtitle= "mencakup semua kontrak perjanjian dengan tenant."\n    #response.view="main.html"\n    \n    dbref=db \n    qry=(db.lease.id>0)\n    headers=[\'Nama Tenant\',\'Unit\',\'Sewa Awal\',\'Sewa Akhir\',\'frequency\',\'Harga Sewa\']\n\n    #rows=SQLTABLE(dbref(qry).select(*sel))\n    rows=db((db.lease.id>0) & (db.tenant.id==db.lease.tenant) & (db.unit.id==db.lease.unit) & (db.lease.frequency==db.frequency.id)).select()\n\n    return dict(headers=headers,rows=rows)\n\n\ndef getlast():\n      response.headers[\'Cache-Control\'] = \'private,max-age=0\'\n      row = db((db.lease.unit == request.vars.unit) & (db.lease.tenant == request.vars.tenant)).select(orderby=~db.lease.sewa_akhir).first()\n      return dict(sewa_akhir=row.sewa_akhir,sewa_awal=row.sewa_awal,tgl_masuk=row.tgl_masuk,tgl_keluar=row.tgl_keluar,harga_sewa=row.harga_sewa,frequency=row.frequency)\n\n@auth.requires_login()\ndef add():\n    import datetime\n    response.title="Tambahkan Lease / Perjanjian Sewa"\n    response.subtitle="Bagaimanapun juga anda harus mencatat perjanjian sewa."\n    response.headers[\'Cache-Control\'] = \'private,max-age=0\'\n \n    form=SQLFORM(db.lease,submit_button="Tambahkan Lease")\n\n    if form.vars.tenant == None:\n      form.vars.tenant = request.vars.tenant\n      form.vars.unit = request.vars.unit\n\n    \n    #if form.vars.tgl_masuk == None:\n    #  form.vars.tgl_masuk = row.tgl_keluar\n    #  form.vars.sewa_awal = row.sewa_akhir\n    # form.vars.harga_sewa = row.harga_sewa\n        \n        \n    if form.accepts(request,session):\n        response.flash = \'form accepted\'\n        redirect(URL(\'unit\',\'index\'))\n    elif form.errors:\n        response.flash = \'form has errors\'\n    else:\n        response.flash = \'please fill the form\'\n    return dict(form=form)\n\n\n@auth.requires_login()\ndef edit():\n    response.title="Edit Lease"\n    response.subtitle="Merubah data sewa menyewa"\n    \n    ids = request.args[0]\n    lease= db(db.lease.id==ids)\n    if not lease: raise HTTP(404)\n    \n    return dict(form=crud.update(db.lease,ids))\n    \n    \n@auth.requires_login()\ndef view():\n    response.title="Detail Lease"\n    response.subtitle="Melihat detail perjanjian sewa / Lease"\n    \n    ids = request.args[0]\n    lease= db((db.lease.id==ids) & (db.tenant.id==db.lease.tenant) & (db.unit.id==db.lease.unit) & (db.frequency.id == db.lease.frequency)).select()\n    if not lease: raise HTTP(404)\n    \n    \n    return dict(lease=lease)\n\n\ndef update_unit():\n    now = datetime.datetime.now()\n    lease = db((db.lease.sewa_awal < now) & (db.lease.sewa_akhir > now)).select()\n    db(db.unit).update(tenant=1,available=True,sewa_akhir=None)\n    for l in lease:\n        db(db.unit.id==l.unit).update(tenant=l.tenant,available=False,sewa_akhir=l.sewa_akhir)\n\n    redirect(URL(\'unit\',\'index\'))\n    return dict(lease=lease)\n    \ndef checkin():\n    response.title="Check-In Tenant"\n    response.subtitle="Isi Data Tenant, lalu klik \'Tambahkan Tenant\', Setelah itu isi data Lease dan klik \'Tambahkan Lease\'"\n    form=SQLFORM(db.tenant,submit_button="Tambahkan Tenant")\n\n    vars = request.args[0]\n    \n    if form.process().accepted:\n        response.flash = \'Data Tenant sudah dimasukkan\'\n        redirect(URL(\'checkin2\',args=[vars, form.vars.id]))\n        \n    return dict(form=form,vars=vars)\n    \ndef checkin2():\n    response.title="Check-in Step 2"\n    response.subtitle="Isi data Lease"\n\n    form=SQLFORM(db.lease,submit_button="Tambahkan Lease")  \n    form.vars.unit=request.args[0]\n    form.vars.tenant=request.args[1]\n\n    if form.process().accepted:\n        response.flash = \'Data Sewa sudah dimasukkan\'\n        redirect(URL(\'update_unit\'))\n    \n    return dict(form=form,vars=vars)\n    \ndef checkout():\n    response.title="Checkout this Tenant?"\n    response.subtitle="Mengeluarkan pelanggan dari unit kamar sewa"\n    response.layout="tenant/view.html"\n    \n    ids = request.args[0]\n    tenant = db((db.tenant.id==ids) & (db.status.id == db.tenant.status)).select()\n    if not tenant: raise HTTP(404)\n    \n    \n    lease = db((db.lease.tenant==ids) & (db.frequency.id == db.lease.frequency)).select()\n    form=FORM(INPUT(_type=\'submit\'))\n    \n    if form.validate():\n        #merubah menjadi status 4 = Lampau\n        form.vars.id = db(db.tenant.id==ids).update(status="4")\n\n        #rubah sewa akhir menjadi hari kemarin?\n        today = date.today()\n        settodate = date(today.year,today.month,today.day - 1)\n        resp = db(db.lease.tenant==ids).update(sewa_akhir=settodate)\n        response.flash = "Data sudah disimpan"\n\n        redirect(URL(\'update_unit\'))\n        \n    return dict(tenant=tenant,lease=lease,form=form,vars=vars)\n\nresponse._vars=response._caller(getlast)\n'
+p7
+sS'snapshot'
+p8
+(dp9
+S'exception'
+p10
+(dp11
+S'__hash__'
+p12
+S"<method-wrapper '__hash__' of exceptions.AttributeError object>"
+p13
+sS'__setattr__'
+p14
+S"<method-wrapper '__setattr__' of exceptions.AttributeError object>"
+p15
+sS'__reduce_ex__'
+p16
+S'<built-in method __reduce_ex__ of exceptions.AttributeError object>'
+p17
+sS'__getslice__'
+p18
+S"<method-wrapper '__getslice__' of exceptions.AttributeError object>"
+p19
+sS'__getitem__'
+p20
+S"<method-wrapper '__getitem__' of exceptions.AttributeError object>"
+p21
+sS'__setstate__'
+p22
+S'<built-in method __setstate__ of exceptions.AttributeError object>'
+p23
+sS'__reduce__'
+p24
+S'<built-in method __reduce__ of exceptions.AttributeError object>'
+p25
+sS'__str__'
+p26
+S"<method-wrapper '__str__' of exceptions.AttributeError object>"
+p27
+sS'__format__'
+p28
+S'<built-in method __format__ of exceptions.AttributeError object>'
+p29
+sS'__getattribute__'
+p30
+S"<method-wrapper '__getattribute__' of exceptions.AttributeError object>"
+p31
+sS'__class__'
+p32
+S"<type 'exceptions.AttributeError'>"
+p33
+sS'__unicode__'
+p34
+S'<built-in method __unicode__ of exceptions.AttributeError object>'
+p35
+sS'__delattr__'
+p36
+S"<method-wrapper '__delattr__' of exceptions.AttributeError object>"
+p37
+sS'__subclasshook__'
+p38
+S'<built-in method __subclasshook__ of type object>'
+p39
+sS'__repr__'
+p40
+S"<method-wrapper '__repr__' of exceptions.AttributeError object>"
+p41
+sS'args'
+p42
+S'("\'NoneType\' object has no attribute \'sewa_akhir\'",)'
+p43
+sS'__dict__'
+p44
+S'{}'
+p45
+sS'__sizeof__'
+p46
+S'<built-in method __sizeof__ of exceptions.AttributeError object>'
+p47
+sS'__doc__'
+p48
+S"'Attribute not found.'"
+p49
+sS'__init__'
+p50
+S"<method-wrapper '__init__' of exceptions.AttributeError object>"
+p51
+sS'__new__'
+p52
+S'<built-in method __new__ of type object>'
+p53
+ssS'evalue'
+p54
+S"'NoneType' object has no attribute 'sewa_akhir'"
+p55
+sS'request'
+p56
+cgluon.html
+XML_unpickle
+p57
+(S's\xdeU\x00\x00<div><table><tr><td style="font-weight:bold;vertical-align:top;">ajax</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">application</td><td style="vertical-align:top;">:</td><td><div>JPM</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">args</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cid</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">client</td><td style="vertical-align:top;">:</td><td><div>192.168.30.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">controller</td><td style="vertical-align:top;">:</td><td><div>lease</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cookies</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">session_id_jpm</td><td style="vertical-align:top;">:</td><td><div>192.168.30.1-a7b78202-3dcd-492b-994a-c3e603515bb4<table><tr><td style="font-weight:bold;vertical-align:top;">comment</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">domain</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">expires</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">httponly</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">max-age</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">path</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">secure</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">version</td><td style="vertical-align:top;">:</td><td><div></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_id_welcome</td><td style="vertical-align:top;">:</td><td><div>192.168.30.1-7182c6bd-b00c-414b-a5b2-aeaf3a09590d<table><tr><td style="font-weight:bold;vertical-align:top;">comment</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">domain</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">expires</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">httponly</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">max-age</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">path</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">secure</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">version</td><td style="vertical-align:top;">:</td><td><div></div></td></tr></table></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">env</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">HTTP_ACCEPT</td><td style="vertical-align:top;">:</td><td><div>text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8,image/webp</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_ACCEPT_ENCODING</td><td style="vertical-align:top;">:</td><td><div>gzip, deflate, sdch</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_ACCEPT_LANGUAGE</td><td style="vertical-align:top;">:</td><td><div>en-US,en;q=0.8,id;q=0.6</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_CACHE_CONTROL</td><td style="vertical-align:top;">:</td><td><div>max-age=0</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_CONNECTION</td><td style="vertical-align:top;">:</td><td><div>keep-alive</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_COOKIE</td><td style="vertical-align:top;">:</td><td><div>session_id_welcome=192.168.30.1-7182c6bd-b00c-414b-a5b2-aeaf3a09590d; session_id_jpm=192.168.30.1-a7b78202-3dcd-492b-994a-c3e603515bb4</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_HOST</td><td style="vertical-align:top;">:</td><td><div>godang.azana.co.id:8000</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">HTTP_USER_AGENT</td><td style="vertical-align:top;">:</td><td><div>Mozilla/5.0 (iPad; CPU OS 8_3 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) CriOS/45.0.2454.89 Mobile/12F69 Safari/600.1.4</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">PATH_INFO</td><td style="vertical-align:top;">:</td><td><div>/JPM/lease/getlast.json</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">QUERY_STRING</td><td style="vertical-align:top;">:</td><td><div>tenant=21&amp;amp;unit=21</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">REMOTE_ADDR</td><td style="vertical-align:top;">:</td><td><div>192.168.30.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">REMOTE_PORT</td><td style="vertical-align:top;">:</td><td><div>49689</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">REQUEST_METHOD</td><td style="vertical-align:top;">:</td><td><div>GET</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SCRIPT_NAME</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SERVER_NAME</td><td style="vertical-align:top;">:</td><td><div>godang</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SERVER_PORT</td><td style="vertical-align:top;">:</td><td><div>8000</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SERVER_PROTOCOL</td><td style="vertical-align:top;">:</td><td><div>HTTP/1.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">SERVER_SOFTWARE</td><td style="vertical-align:top;">:</td><td><div>Rocket 1.2.6</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">app_folders</td><td style="vertical-align:top;">:</td><td><div>set([&#x27;D:\\\\web2py\\\\applications\\\\admin\\\\&#x27;, &#x27;D:\\\\web2py\\\\applications\\\\welcome\\\\&#x27;, &#x27;D:\\\\web2py\\\\applications\\\\jpm\\\\&#x27;, &#x27;D:\\\\web2py\\\\applications\\\\JPM\\\\&#x27;])</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">applications_parent</td><td style="vertical-align:top;">:</td><td><div>D:\\web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cmd_args</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cmd_options</td><td style="vertical-align:top;">:</td><td><div>&lt;Values at 0x15d8170: {&#x27;verbose&#x27;: False, &#x27;ip&#x27;: &#x27;127.0.0.1&#x27;, &#x27;debuglevel&#x27;: 30, &#x27;with_scheduler&#x27;: False, &#x27;ips&#x27;: [&#x27;192.168.30.100&#x27;], &#x27;shutdown_timeout&#x27;: 5, &#x27;taskbar&#x27;: False, &#x27;with_coverage&#x27;: False, &#x27;scheduler_groups&#x27;: None, &#x27;port&#x27;: 8000, &#x27;maxthreads&#x27;: None, &#x27;softcron&#x27;: False, &#x27;server_name&#x27;: &#x27;godang&#x27;, &#x27;bpython&#x27;: False, &#x27;nogui&#x27;: False, &#x27;pid_filename&#x27;: &#x27;httpserver.pid&#x27;, &#x27;extcron&#x27;: False, &#x27;runcron&#x27;: False, &#x27;run_system_tests&#x27;: False, &#x27;test&#x27;: None, &#x27;folder&#x27;: &#x27;D:\\\\web2py&#x27;, &#x27;config&#x27;: &#x27;&#x27;, &#x27;minthreads&#x27;: None, &#x27;shell&#x27;: None, &#x27;run&#x27;: &#x27;&#x27;, &#x27;log_filename&#x27;: &#x27;httpserver.log&#x27;, &#x27;profiler_dir&#x27;: None, &#x27;args&#x27;: [&#x27;&#x27;], &#x27;socket_timeout&#x27;: 5, &#x27;ssl_ca_certificate&#x27;: None, &#x27;scheduler&#x27;: None, &#x27;interfaces&#x27;: None, &#x27;ssl_private_key&#x27;: &#x27;&#x27;, &#x27;gae&#x27;: None, &#x27;password&#x27;: &#x27;&lt;ask&gt;&#x27;, &#x27;request_queue_size&#x27;: 5, &#x27;ssl_certificate&#x27;: &#x27;&#x27;, &#x27;cronjob&#x27;: False, &#x27;numthreads&#x27;: None, &#x27;quiet&#x27;: False, &#x27;import_models&#x27;: False, &#x27;timeout&#x27;: 10, &#x27;plain&#x27;: False, &#x27;nobanner&#x27;: False}&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">db_sessions</td><td style="vertical-align:top;">:</td><td><div>set([])</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">debugging</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">gluon_parent</td><td style="vertical-align:top;">:</td><td><div>D:\\web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_accept</td><td style="vertical-align:top;">:</td><td><div>text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8,image/webp</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_accept_encoding</td><td style="vertical-align:top;">:</td><td><div>gzip, deflate, sdch</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_accept_language</td><td style="vertical-align:top;">:</td><td><div>en-US,en;q=0.8,id;q=0.6</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_cache_control</td><td style="vertical-align:top;">:</td><td><div>max-age=0</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_connection</td><td style="vertical-align:top;">:</td><td><div>keep-alive</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_cookie</td><td style="vertical-align:top;">:</td><td><div>session_id_welcome=192.168.30.1-7182c6bd-b00c-414b-a5b2-aeaf3a09590d; session_id_jpm=192.168.30.1-a7b78202-3dcd-492b-994a-c3e603515bb4</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_host</td><td style="vertical-align:top;">:</td><td><div>godang.azana.co.id:8000</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">http_user_agent</td><td style="vertical-align:top;">:</td><td><div>Mozilla/5.0 (iPad; CPU OS 8_3 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) CriOS/45.0.2454.89 Mobile/12F69 Safari/600.1.4</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_jython</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_pypy</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_source</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">local_hosts</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>godang</div></td></tr><tr><td><div>192.168.30.100</div></td></tr><tr><td><div>::1</div></td></tr><tr><td><div>::ffff:127.0.0.1</div></td></tr><tr><td><div>127.0.0.1</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">path_info</td><td style="vertical-align:top;">:</td><td><div>/JPM/lease/getlast.json</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">query_string</td><td style="vertical-align:top;">:</td><td><div>tenant=21&amp;amp;unit=21</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">remote_addr</td><td style="vertical-align:top;">:</td><td><div>192.168.30.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">remote_port</td><td style="vertical-align:top;">:</td><td><div>49689</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">request_method</td><td style="vertical-align:top;">:</td><td><div>GET</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">request_uri</td><td style="vertical-align:top;">:</td><td><div>/JPM/lease/getlast.json?tenant=21&amp;amp;unit=21</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">script_name</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">server_name</td><td style="vertical-align:top;">:</td><td><div>godang</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">server_port</td><td style="vertical-align:top;">:</td><td><div>8000</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">server_protocol</td><td style="vertical-align:top;">:</td><td><div>HTTP/1.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">server_software</td><td style="vertical-align:top;">:</td><td><div>Rocket 1.2.6</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">web2py_path</td><td style="vertical-align:top;">:</td><td><div>D:\\web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">web2py_version</td><td style="vertical-align:top;">:</td><td><div>2.9.11-stable+timestamp.2014.09.15.23.35.11</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.errors</td><td style="vertical-align:top;">:</td><td><div>&lt;open file &#x27;&lt;stderr&gt;&#x27;, mode &#x27;w&#x27; at 0x009360D0&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.file_wrapper</td><td style="vertical-align:top;">:</td><td><div>&lt;class wsgiref.util.FileWrapper at 0x00C2F880&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.input</td><td style="vertical-align:top;">:</td><td><div>&lt;socket._fileobject object at 0x01AA00B0&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.multiprocess</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.multithread</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.run_once</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.url_scheme</td><td style="vertical-align:top;">:</td><td><div>http</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi.version</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>1</div></td></tr><tr><td><div>0</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_errors</td><td style="vertical-align:top;">:</td><td><div>&lt;open file &#x27;&lt;stderr&gt;&#x27;, mode &#x27;w&#x27; at 0x009360D0&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_file_wrapper</td><td style="vertical-align:top;">:</td><td><div>&lt;class wsgiref.util.FileWrapper at 0x00C2F880&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_input</td><td style="vertical-align:top;">:</td><td><div>&lt;socket._fileobject object at 0x01AA00B0&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_multiprocess</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_multithread</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_run_once</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_url_scheme</td><td style="vertical-align:top;">:</td><td><div>http</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi_version</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>1</div></td></tr><tr><td><div>0</div></td></tr></table></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">extension</td><td style="vertical-align:top;">:</td><td><div>json</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">folder</td><td style="vertical-align:top;">:</td><td><div>D:\\web2py\\applications\\JPM\\</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">function</td><td style="vertical-align:top;">:</td><td><div>getlast</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">global_settings</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">app_folders</td><td style="vertical-align:top;">:</td><td><div>set([&#x27;D:\\\\web2py\\\\applications\\\\admin\\\\&#x27;, &#x27;D:\\\\web2py\\\\applications\\\\welcome\\\\&#x27;, &#x27;D:\\\\web2py\\\\applications\\\\jpm\\\\&#x27;, &#x27;D:\\\\web2py\\\\applications\\\\JPM\\\\&#x27;])</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">applications_parent</td><td style="vertical-align:top;">:</td><td><div>D:\\web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cmd_args</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cmd_options</td><td style="vertical-align:top;">:</td><td><div>&lt;Values at 0x15d8170: {&#x27;verbose&#x27;: False, &#x27;ip&#x27;: &#x27;127.0.0.1&#x27;, &#x27;debuglevel&#x27;: 30, &#x27;with_scheduler&#x27;: False, &#x27;ips&#x27;: [&#x27;192.168.30.100&#x27;], &#x27;shutdown_timeout&#x27;: 5, &#x27;taskbar&#x27;: False, &#x27;with_coverage&#x27;: False, &#x27;scheduler_groups&#x27;: None, &#x27;port&#x27;: 8000, &#x27;maxthreads&#x27;: None, &#x27;softcron&#x27;: False, &#x27;server_name&#x27;: &#x27;godang&#x27;, &#x27;bpython&#x27;: False, &#x27;nogui&#x27;: False, &#x27;pid_filename&#x27;: &#x27;httpserver.pid&#x27;, &#x27;extcron&#x27;: False, &#x27;runcron&#x27;: False, &#x27;run_system_tests&#x27;: False, &#x27;test&#x27;: None, &#x27;folder&#x27;: &#x27;D:\\\\web2py&#x27;, &#x27;config&#x27;: &#x27;&#x27;, &#x27;minthreads&#x27;: None, &#x27;shell&#x27;: None, &#x27;run&#x27;: &#x27;&#x27;, &#x27;log_filename&#x27;: &#x27;httpserver.log&#x27;, &#x27;profiler_dir&#x27;: None, &#x27;args&#x27;: [&#x27;&#x27;], &#x27;socket_timeout&#x27;: 5, &#x27;ssl_ca_certificate&#x27;: None, &#x27;scheduler&#x27;: None, &#x27;interfaces&#x27;: None, &#x27;ssl_private_key&#x27;: &#x27;&#x27;, &#x27;gae&#x27;: None, &#x27;password&#x27;: &#x27;&lt;ask&gt;&#x27;, &#x27;request_queue_size&#x27;: 5, &#x27;ssl_certificate&#x27;: &#x27;&#x27;, &#x27;cronjob&#x27;: False, &#x27;numthreads&#x27;: None, &#x27;quiet&#x27;: False, &#x27;import_models&#x27;: False, &#x27;timeout&#x27;: 10, &#x27;plain&#x27;: False, &#x27;nobanner&#x27;: False}&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">db_sessions</td><td style="vertical-align:top;">:</td><td><div>set([])</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">debugging</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">gluon_parent</td><td style="vertical-align:top;">:</td><td><div>D:\\web2py</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_jython</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_pypy</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_source</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">local_hosts</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>godang</div></td></tr><tr><td><div>192.168.30.100</div></td></tr><tr><td><div>::1</div></td></tr><tr><td><div>::ffff:127.0.0.1</div></td></tr><tr><td><div>127.0.0.1</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">web2py_version</td><td style="vertical-align:top;">:</td><td><div>2.9.11-stable+timestamp.2014.09.15.23.35.11</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_https</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_local</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_restful</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_sheduler</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">is_shell</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">now</td><td style="vertical-align:top;">:</td><td><div>datetime.datetime(2015, 9, 24, 9, 20, 3, 31000)</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">raw_args</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">raw_extension</td><td style="vertical-align:top;">:</td><td><div>json</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">url</td><td style="vertical-align:top;">:</td><td><div>/JPM/lease/getlast.json</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">utcnow</td><td style="vertical-align:top;">:</td><td><div>datetime.datetime(2015, 9, 24, 2, 20, 3, 31000)</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">uuid</td><td style="vertical-align:top;">:</td><td><div>JPM/192.168.30.1.2015-09-24.09-20-03.89fdf964-081f-4d96-9337-9961bd5da8f4</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">wsgi</td><td style="vertical-align:top;">:</td><td><div>&lt;gluon.main.LazyWSGI object at 0x04A41930&gt;</div></td></tr></table></div>'
+tRp58
+sS'frames'
+p59
+(lp60
+(dp61
+S'file'
+p62
+S'D:\\web2py\\gluon\\restricted.py'
+p63
+sS'dump'
+p64
+(dp65
+sS'lnum'
+p66
+I224
+sS'lines'
+p67
+(dp68
+sS'call'
+p69
+S"(code='import datetime\\nfrom datetime import date\\n\\n\\n# co...=vars)\\n\\nresponse._vars=response._caller(getlast)\\n', environment={'A': <class 'gluon.html.A'>, 'ANY_OF': <class 'gluon.validators.ANY_OF'>, 'ASSIGNJS': <function ASSIGNJS>, 'Auth': <class 'gluon.tools.Auth'>, 'B': <class 'gluon.html.B'>, 'BEAUTIFY': <class 'gluon.html.BEAUTIFY'>, 'BODY': <class 'gluon.html.BODY'>, 'BR': <class 'gluon.html.BR'>, 'BUTTON': <class 'gluon.html.BUTTON'>, 'CAT': <class 'gluon.html.CAT'>, ...}, layer=r'D:\\web2py\\applications\\JPM\\controllers/lease.py')"
+p70
+sS'func'
+p71
+S'restricted'
+p72
+sa(dp73
+g62
+S'D:\\web2py\\applications\\JPM\\controllers\\lease.py'
+p74
+sg64
+(dp75
+sg66
+I147
+sg67
+(dp76
+I136
+S''
+sI137
+S'        #rubah sewa akhir menjadi hari kemarin?'
+p77
+sI138
+S'        today = date.today()'
+p78
+sI139
+S'        settodate = date(today.year,today.month,today.day - 1)'
+p79
+sI140
+S'        resp = db(db.lease.tenant==ids).update(sewa_akhir=settodate)'
+p80
+sI141
+S'        response.flash = "Data sudah disimpan"'
+p81
+sI142
+S''
+sI143
+S"        redirect(URL('update_unit'))"
+p82
+sI144
+S''
+sI145
+S'    return dict(tenant=tenant,lease=lease,form=form,vars=vars)'
+p83
+ssg69
+S'()'
+p84
+sg71
+S'<module>'
+p85
+sa(dp86
+g62
+S'D:\\web2py\\gluon\\globals.py'
+p87
+sg64
+(dp88
+sg66
+I392
+sg67
+(dp89
+sg69
+S'(f=<function getlast>)'
+p90
+sg71
+S'<lambda>'
+p91
+sa(dp92
+g62
+S'D:\\web2py\\applications\\JPM\\controllers\\lease.py'
+p93
+sg64
+(dp94
+S'row.harga_sewa'
+p95
+S'undefined'
+p96
+sS'row.tgl_keluar'
+p97
+g96
+sS'sewa_awal'
+p98
+g96
+sS'tgl_masuk'
+p99
+g96
+sS'harga_sewa'
+p100
+g96
+sS'row.sewa_awal'
+p101
+g96
+sS'row.frequency'
+p102
+g96
+sS'sewa_akhir'
+p103
+g96
+sS'frequency'
+p104
+g96
+sS'row.sewa_akhir'
+p105
+g96
+sS'row.tgl_masuk'
+p106
+g96
+sS'tgl_keluar'
+p107
+g96
+sS'builtindict'
+p108
+S"<type 'dict'>"
+p109
+sS'row'
+p110
+S'None'
+p111
+ssg66
+I26
+sg67
+(dp112
+I21
+S''
+sI22
+S''
+sI23
+S'def getlast():'
+p113
+sI24
+S"      response.headers['Cache-Control'] = 'private,max-age=0'"
+p114
+sI25
+S'      row = db((db.lease.unit == request.vars.unit) & (db.lease.tenant == request.vars.tenant)).select(orderby=~db.lease.sewa_akhir).first()'
+p115
+sI26
+S'      return dict(sewa_akhir=row.sewa_akhir,sewa_awal=row.sewa_awal,tgl_masuk=row.tgl_masuk,tgl_keluar=row.tgl_keluar,harga_sewa=row.harga_sewa,frequency=row.frequency)'
+p116
+sI27
+S''
+sI28
+S'@auth.requires_login()'
+p117
+sI29
+S'def add():'
+p118
+sI30
+S'    import datetime'
+p119
+ssg69
+S'()'
+p120
+sg71
+S'getlast'
+p121
+sasS'pyver'
+p122
+S'Python 2.7.6: D:\\web2py\\web2py.exe (prefix: )'
+p123
+sS'session'
+p124
+g57
+(S's\xe9\x08\x00\x00<div><table><tr><td style="font-weight:bold;vertical-align:top;">auth</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">expiration</td><td style="vertical-align:top;">:</td><td><div>3600</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">hmac_key</td><td style="vertical-align:top;">:</td><td><div>da677051-6e31-43b4-b044-6344cd024cad</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">last_visit</td><td style="vertical-align:top;">:</td><td><div>datetime.datetime(2015, 9, 24, 9, 18, 45, 359000)</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">remember_me</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">user</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">email</td><td style="vertical-align:top;">:</td><td><div>irzaip@gmail.com</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">first_name</td><td style="vertical-align:top;">:</td><td><div>Irza</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">id</td><td style="vertical-align:top;">:</td><td><div>1L</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">last_name</td><td style="vertical-align:top;">:</td><td><div>Pulungan</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">registration_id</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">registration_key</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">reset_password_key</td><td style="vertical-align:top;">:</td><td><div></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">user_groups</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">1</td><td style="vertical-align:top;">:</td><td><div>manager</div></td></tr></table></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">flash</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr></table></div>'
+tRp125
+sS'etype'
+p126
+S"<type 'exceptions.AttributeError'>"
+p127
+sS'date'
+p128
+S'Thu Sep 24 09:20:03 2015'
+p129
+sS'response'
+p130
+g57
+(S's\xc9.\x00\x00<div><table><tr><td style="font-weight:bold;vertical-align:top;">body</td><td style="vertical-align:top;">:</td><td><div>&lt;cStringIO.StringO object at 0x057EC1C0&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">cookies</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">session_id_jpm</td><td style="vertical-align:top;">:</td><td><div>192.168.30.1-a7b78202-3dcd-492b-994a-c3e603515bb4<table><tr><td style="font-weight:bold;vertical-align:top;">comment</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">domain</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">expires</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">httponly</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">max-age</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">path</td><td style="vertical-align:top;">:</td><td><div>/</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">secure</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">version</td><td style="vertical-align:top;">:</td><td><div></div></td></tr></table></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">delimiters</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>{{</div></td></tr><tr><td><div>}}</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">files</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">flash</td><td style="vertical-align:top;">:</td><td><div></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">form_label_separator</td><td style="vertical-align:top;">:</td><td><div>: </div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">formstyle</td><td style="vertical-align:top;">:</td><td><div>table3cols</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">generic_patterns</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">google_analytics_id</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">headers</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">Cache-Control</td><td style="vertical-align:top;">:</td><td><div>private,max-age=0</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">X-Powered-By</td><td style="vertical-align:top;">:</td><td><div>web2py</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">menu</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div><table><tr><td><div>Home</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/JPM/default/index.json</div></td></tr><tr><td><div><table></table></div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Unit</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/JPM/unit/index.json</div></td></tr><tr><td><div><table></table></div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Tenant</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/JPM/tenant/index.json</div></td></tr><tr><td><div><table></table></div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Contract</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>None</div></td></tr><tr><td><div><table><tr><td><div><table><tr><td><div>Workorder</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/JPM/workorder/index.json</div></td></tr><tr><td><div>[]</div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Lease</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/JPM/lease/index.json</div></td></tr><tr><td><div>[]</div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Vendor</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/JPM/vendor/index.json</div></td></tr><tr><td><div>[]</div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>ToDo</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/JPM/todo/index.json</div></td></tr><tr><td><div>[]</div></td></tr></table></div></td></tr></table></div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Report</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>None</div></td></tr><tr><td><div><table><tr><td><div><table><tr><td><div>Invoice</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/JPM/invoice/index.json</div></td></tr><tr><td><div>[]</div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Receipt</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/JPM/receipt/index.json</div></td></tr><tr><td><div>[]</div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Accounting</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/JPM/accounting/index.json</div></td></tr><tr><td><div>[]</div></td></tr></table></div></td></tr></table></div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Manage</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>None</div></td></tr><tr><td><div><table><tr><td><div><table><tr><td><div>Type Payment</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/JPM/typepayment/index.json</div></td></tr><tr><td><div>[]</div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Category</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/JPM/category/index.json</div></td></tr><tr><td><div>[]</div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Building</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/JPM/building/index.json</div></td></tr><tr><td><div>[]</div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Devident</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/JPM/devident/index.json</div></td></tr><tr><td><div>[]</div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Inventory</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/JPM/inventory/index.json</div></td></tr><tr><td><div>[]</div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Priority</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/JPM/Priority/index.json</div></td></tr><tr><td><div>[]</div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Status</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/JPM/Status/index.json</div></td></tr><tr><td><div>[]</div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Status Pekerjaan</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/JPM/status_pekerjaan/index.json</div></td></tr><tr><td><div>[]</div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Type Cat</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/JPM/typecat/index.json</div></td></tr><tr><td><div>[]</div></td></tr></table></div></td></tr><tr><td><div><table><tr><td><div>Type Payment</div></td></tr><tr><td><div>False</div></td></tr><tr><td><div>/JPM/typepayment/index.json</div></td></tr><tr><td><div>[]</div></td></tr></table></div></td></tr></table></div></td></tr></table></div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">meta</td><td style="vertical-align:top;">:</td><td><div><table><tr><td style="font-weight:bold;vertical-align:top;">author</td><td style="vertical-align:top;">:</td><td><div>IRZA PULUNGAN &lt;irzaip@gmail.com&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">copyright</td><td style="vertical-align:top;">:</td><td><div>Copyright 2011</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">description</td><td style="vertical-align:top;">:</td><td><div>App for Landlords</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">generator</td><td style="vertical-align:top;">:</td><td><div>Web2py Web Framework</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">keywords</td><td style="vertical-align:top;">:</td><td><div>web2py, python, framework</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">models_to_run</td><td style="vertical-align:top;">:</td><td><div><table><tr><td><div>^\\w+\\.py$</div></td></tr><tr><td><div>^lease/\\w+\\.py$</div></td></tr><tr><td><div>^lease/getlast/\\w+\\.py$</div></td></tr></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">postprocessing</td><td style="vertical-align:top;">:</td><td><div><table></table></div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_client</td><td style="vertical-align:top;">:</td><td><div>192.168.30.1</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_cookie_compression_level</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_cookie_expires</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_cookie_key</td><td style="vertical-align:top;">:</td><td><div>None</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_data_name</td><td style="vertical-align:top;">:</td><td><div>session_data_jpm</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_file</td><td style="vertical-align:top;">:</td><td><div>&lt;open file &#x27;D:\\\\web2py\\\\applications\\\\JPM\\\\sessions\\\\0ff\\\\0c8\\\\192.168.30.1-a7b78202-3dcd-492b-994a-c3e603515bb4&#x27;, mode &#x27;rb+&#x27; at 0x04A6E860&gt;</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_filename</td><td style="vertical-align:top;">:</td><td><div>D:\\web2py\\applications\\JPM\\sessions\\192.168.30.1-a7b78202-3dcd-492b-994a-c3e603515bb4</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_hash</td><td style="vertical-align:top;">:</td><td><div>e99220853a4da14e7496343828ec7cfa</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_id</td><td style="vertical-align:top;">:</td><td><div>192.168.30.1-a7b78202-3dcd-492b-994a-c3e603515bb4</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_id_name</td><td style="vertical-align:top;">:</td><td><div>session_id_jpm</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_locked</td><td style="vertical-align:top;">:</td><td><div>True</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_masterapp</td><td style="vertical-align:top;">:</td><td><div>JPM</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_new</td><td style="vertical-align:top;">:</td><td><div>False</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">session_storage_type</td><td style="vertical-align:top;">:</td><td><div>file</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">status</td><td style="vertical-align:top;">:</td><td><div>200</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">subtitle</td><td style="vertical-align:top;">:</td><td><div>customize me!</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">title</td><td style="vertical-align:top;">:</td><td><div>Jpm</div></td></tr><tr><td style="font-weight:bold;vertical-align:top;">view</td><td style="vertical-align:top;">:</td><td><div>lease/getlast.json</div></td></tr></table></div>'
+tRp131
+sS'locals'
+p132
+(dp133
+S'row'
+p134
+S'None'
+p135
+sssS'traceback'
+p136
+S'Traceback (most recent call last):\n  File "gluon/restricted.py", line 224, in restricted\n  File "D:\\web2py\\applications\\JPM\\controllers/lease.py", line 147, in <module>\n  File "gluon/globals.py", line 392, in <lambda>\n  File "D:\\web2py\\applications\\JPM\\controllers/lease.py", line 26, in getlast\n    return dict(sewa_akhir=row.sewa_akhir,sewa_awal=row.sewa_awal,tgl_masuk=row.tgl_masuk,tgl_keluar=row.tgl_keluar,harga_sewa=row.harga_sewa,frequency=row.frequency)\nAttributeError: \'NoneType\' object has no attribute \'sewa_akhir\'\n'
+p137
+s.

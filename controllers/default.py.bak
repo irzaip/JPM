@@ -19,6 +19,11 @@ def index():
     now=datetime.datetime.now()
     #db.todo.insert(tanggal=now,keterangan="Tanggal",status_pekerjaan="1",priority="1",url="/jpm/")
 
+    response.menu = [
+      (T('Home'), False, URL('default','index'), []),
+      (T('Unit'), False, URL('unit','index'),[]),
+      (T('Tenant'), False, URL('tenant','index'),[])]
+
     response.flash = "Selamat menggunakan JPM"
     response.title = "JPM"
     response.subtitle="Juragan Property Millenium"

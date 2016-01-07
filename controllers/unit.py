@@ -4,7 +4,7 @@
 def index():
     def mylink(field, type, ref):
         return URL(args=[field])
-        
+
     response.title = "Daftar Unit Sewa"
     response.subtitle= "mencakup semua unit sewa dengan segala status"
     

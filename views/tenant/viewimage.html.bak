@@ -1,0 +1,4 @@
+{{extend 'layout.html'}}
+{{for table in tables:}}
+    <img src="{{=URL('download', args=table.mainfile)}}" /> <br />
+{{pass}}

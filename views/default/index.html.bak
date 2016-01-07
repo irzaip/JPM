@@ -2,7 +2,8 @@
 
 {{extend 'layout.html'}}
 
-<table class="index_table">
+<table data-role="table" id="table-custom-2" data-mode="columntoggle" class="ui-body-d ui-shadow table-stripe ui-responsive" data-column-btn-theme="b" data-column-btn-text="Columns to display..." data-column-popup-theme="a">
+    
 <th>Tanggal</th>
 <th>Keterangan</th>
 <th>Status Pekerjaan</th>
@@ -14,9 +15,9 @@
 <tr> 
 <td>{{=row.todo.tanggal}} </td>
 <td>{{=row.todo.keterangan}} </td>
-<td>{{=row.todo.status_pekerjaan}} </td>
+<td>{{=row.status_pekerjaan.status_pekerjaan}} </td>
 <td>{{=row.priority.priority}} </td>
-<td><a href="{{=row.todo.url}}">[View]</a></td>
+<td><a href="{{=row.todo.url}}" class="ui-btn ui-btn-inline ui-mini">View</a></td>
 </tr>
 {{pass}}
 </table>

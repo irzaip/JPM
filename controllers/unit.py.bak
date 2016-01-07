@@ -4,7 +4,11 @@
 def index():
     def mylink(field, type, ref):
         return URL(args=[field])
-        
+    
+    response.menu = [
+      (T('Home'), False, URL('default','index'), []),
+      (T('Unit'), False, URL('unit','index'),[]),
+      (T('Tenant'), False, URL('tenant','index'),[])]
     response.title = "Daftar Unit Sewa"
     response.subtitle= "mencakup semua unit sewa dengan segala status"
     
@@ -20,7 +24,7 @@ def index():
     #fields=['nama_unit','tenant','available'] 
     #sel=[db.unit[field] for field in fields] 
     #rows=SQLTABLE(dbref(qry).select(*sel))
-    rows=db((db.unit.id>0) & (db.unit.tenant==db.tenant.id) & ((db.lease.tenant==db.unit.tenant))).select()
+    rows=db((db.unit.id>0) & (db.unit.tenant==db.tenant.id)).select()
     
     return dict(rows=rows,headers=headers)
 

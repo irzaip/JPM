@@ -1,0 +1,4 @@
+{{extend 'layout.html'}}
+wallalla
+<img src="{{=URL('download',args=wolverine2.jpg)}}" />
+{{=BEAUTIFY(response._vars)}}

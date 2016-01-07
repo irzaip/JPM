@@ -52,7 +52,7 @@
 ================================================== */
 	body {
 		background: #fff;
-		font: 14px/21px "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font: 20px/28px "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
 		color: #444;
 		-webkit-font-smoothing: antialiased; /* Fix for webkit rendering */
 		-webkit-text-size-adjust: 100%;
@@ -66,11 +66,11 @@
 		font-family: "Georgia", "Times New Roman", Helvetica, Arial, sans-serif;
 		font-weight: normal; }
 	h1 a, h2 a, h3 a, h4 a, h5 a, h6 a { font-weight: inherit; }
-	h1 { font-size: 46px; line-height: 50px; }
-	h2 { font-size: 35px; line-height: 40px; }
-	h3 { font-size: 28px; line-height: 34px; }
-	h4 { font-size: 21px; line-height: 30px; }
-	h5 { font-size: 17px; line-height: 24px; }
+	h1 { font-size: 20px; line-height: 30px; }
+	h2 { font-size: 18px; line-height: 28px; }
+	h3 { font-size: 16px; line-height: 26px; }
+	h4 { font-size: 15px; line-height: 25px; }
+	h5 { font-size: 16px; line-height: 24px; }
 	h6 { font-size: 14px; line-height: 21px; }
 
 	.subheader { color: #777; }
@@ -81,7 +81,7 @@
 
 	em { font-style: italic; }
 	strong { font-weight: bold; color: #333; }
-	small { font-size: 80%; }
+	small { font-size: 90%; }
 
 /*	Blockquotes  */
 	blockquote, blockquote p { font-size: 17px; line-height: 24px; color: #777; font-style: italic; }
@@ -290,7 +290,7 @@
 		-moz-border-radius: 2px;
 		-webkit-border-radius: 2px;
 		border-radius: 2px;
-		font: 13px "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
+		font: 20px "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
 		color: #777;
 		margin: 0;
 		width: 210px;
@@ -315,7 +315,7 @@
 	legend {
 		display: block;
 		font-weight: bold;
-		font-size: 13px;  }
+		font-size: 20px;  }
 	select {
 		width: 220px; }
 	input[type="checkbox"] {
@@ -624,6 +624,3 @@
       width: 0;
       height: 0;
     }
-
-
-

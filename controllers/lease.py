@@ -18,38 +18,36 @@ def index():
     rows=db((db.lease.id>0) & (db.tenant.id==db.lease.tenant) & (db.unit.id==db.lease.unit) & (db.lease.frequency==db.frequency.id)).select()
 
     return dict(headers=headers,rows=rows)
-    
+
+
+def getlast():
+      response.headers['Cache-Control'] = 'private,max-age=0'
+      row = db((db.lease.unit == request.vars.unit) & (db.lease.tenant == request.vars.tenant)).select(orderby=~db.lease.sewa_akhir).first()
+      return dict(sewa_akhir=row.sewa_akhir,sewa_awal=row.sewa_awal,tgl_masuk=row.tgl_masuk,tgl_keluar=row.tgl_keluar,harga_sewa=row.harga_sewa,frequency=row.frequency)
+
 @auth.requires_login()
 def add():
+    import datetime
     response.title="Tambahkan Lease / Perjanjian Sewa"
     response.subtitle="Bagaimanapun juga anda harus mencatat perjanjian sewa."
+    response.headers['Cache-Control'] = 'private,max-age=0'
  
     form=SQLFORM(db.lease,submit_button="Tambahkan Lease")
 
-    form.vars.tenant = request.vars.tenant
-    form.vars.unit = request.vars.unit
+    if form.vars.tenant == None:
+      form.vars.tenant = request.vars.tenant
+      form.vars.unit = request.vars.unit
 
-    #update field sewa akhir di tabel unit
-    #query = (db.unit.id == request.vars.unit)
-    #set = db(query)
-    #thisdate = form.vars.sewa_akhir.value
-    #thisdate = str(thisdate)
-    #set.update(sewa_akhir=thisdate)
-            
+
     if form.accepts(request,session):
         response.flash = 'form accepted'
-        
-        
-        
-        redirect(URL('unit','index'))
-        
+        redirect(URL('tenant','view',args=request.vars.tenant))
     elif form.errors:
         response.flash = 'form has errors'
     else:
-        response.flash = 'please fill the form'
-
+        response.flash = 'Isi form, jangan lupa memeriksa tanggal sewa akhir. Tanggal jatuh tempo menggunakan tanggal tersebut.'
     return dict(form=form)
-    
+
 
 @auth.requires_login()
 def edit():

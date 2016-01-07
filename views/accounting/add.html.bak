@@ -1,3 +1,9 @@
 {{extend 'layout.html'}}
-<h1>This is the accounting/add.html template</h1>
 {{=BEAUTIFY(response._vars)}}
+<script>
+ $(document).ready(function()
+ {
+    $("input#accounting_tgl_di_bayar").attr("data-role","date")
+    $("input#accounting_tgl_di_bayar").attr("data-inline","true")
+ });
+</script>

@@ -1,42 +1,33 @@
 {{extend 'layout.html'}}
-<table class="index_table">
+<table data-role="table" id="index-table" data-mode="columntoggle" class="table-stripe" data-column-btn-theme="b" data-column-btn-text="." data-column-popup-theme="a">
+<thead><tr>
 {{for header in headers:}}
 <th>{{=header}}</th>
 {{pass}}
 <th>action</th>
-{{for row in rows:}}
+</tr></thead>
 
+<tbody>
+{{for row in rows:}}
+    
 <tr>
 <td>{{=A(row.unit.nama_unit,_href=URL('view',args=row.unit.id))}}</td>
 
-<td>
-{{if row.tenant.nama_lengkap=="Kosong":}}
-{{else:}}{{=A(row.tenant.nama_lengkap,_href=URL('tenant','view',args=row.tenant.id))}}</a>
-{{pass}}
-</td>
+<td>{{if row.tenant.nama_lengkap=="Kosong":}}
+    {{else:}}{{=A(row.tenant.nama_lengkap,_href=URL('tenant','view',args=row.tenant.id))}}{{pass}}</td>
 
-<td>
-{{if (row.unit.available==True and row.unit.tenant=="1"):}}
-  {{=A('[Booking]',_href=URL('tenant','booking',vars={'unit':row.unit.id}))}}
-  {{=A('[Check-In]',_href=URL('tenant','checkin',vars={'unit':row.unit.id}),_onclick="return confirm('Yakin?');")}}
+<td>{{if (row.unit.available==True and row.unit.tenant=="1"):}}
+  {{=A('Booking',_class="ui-btn ui-btn-inline ui-mini",_href=URL('tenant','booking',vars={'unit':row.unit.id}))}}
+  {{=A('Check-In',_class="ui-btn ui-btn-inline ui-mini",_href=URL('tenant','checkin',vars={'unit':row.unit.id}),_onclick="return confirm('Yakin?');")}}
 {{else:}}
-{{pass}}
-</td>
+{{pass}}</td>
 
-<td>
-{{if row.tenant.nama_lengkap<>"Kosong":}}{{=row.unit.sewa_akhir}}{{pass}}
-</td>
-<td>
-{{if (row.unit.available==False and row.unit.booked==False):}}
-  {{=A('[Check-Out]',_href=URL('tenant','checkout',vars={'tenant':row.tenant.id,'unit':row.unit.id}))}}
-{{pass}}
-{{if row.unit.booked==True:}}
-  {{=A('[Check-In]',_href=URL('tenant','confirm',vars={'tenant':row.tenant.id,'unit':row.unit.id}))}}
-  {{=A('[Cancel]',_href=URL('tenant','bookcancel',vars={'tenant':row.tenant.id,'unit':row.unit.id}),_onclick="return confirm('Cancel booking?');")}}
-{{pass}}
+<td>{{if row.tenant.nama_lengkap<>"Kosong":}}{{=row.unit.sewa_akhir}}{{pass}}</td>
 
-</td>
+<td>{{if (row.unit.available==False and row.unit.booked==False):}}{{=A('Check-Out',_href=URL('tenant','checkout',vars={'tenant':row.tenant.id,'unit':row.unit.id}),_class="ui-btn ui-btn-inline ui-mini")}}{{pass}}{{if row.unit.booked==True:}}{{=A('Check-In',_class="ui-btn ui-btn-inline ui-mini",_href=URL('tenant','confirm',vars={'tenant':row.tenant.id,'unit':row.unit.id}))}}{{=A('Cancel',_class="ui-btn ui-btn-inline ui-mini",_href=URL('tenant','bookcancel',vars={'tenant':row.tenant.id,'unit':row.unit.id}),_onclick="return confirm('Cancel booking?');")}}
+{{pass}}</td>
 
 </tr>
 {{pass}}
+</tbody>
 </table>

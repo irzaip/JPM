@@ -24,32 +24,10 @@ response.google_analytics_id = None
 
 response.menu = [
     (T('Home'), False, URL('default','index'), []),
+    (T('Todo'), False, URL('default','index'), []),
     (T('Unit'), False, URL('unit','index'),[]),
-    (T('Tenant'), False, URL('tenant','index'),[]),
-    (T('Contract'),False,None,[
-        (T('Workorder'), False, URL('workorder','index'),[]),
-        (T('Lease'), False, URL('lease','index'),[]),
-        (T('Vendor'), False, URL('vendor','index'),[]),
-        (T('ToDo'), False, URL('todo','index'),[]),
-        ]),
-    (T('Report'),False,None,[
-        (T('Invoice'),False,URL('invoice','index'),[]),
-        (T('Receipt'),False,URL('receipt','index'),[]),
-        (T('Accounting'),False,URL('accounting','index'),[]),
-    ]),
+    (T('Tenant'), False, URL('tenant','index'),[])
     ]
     
-if auth.user and auth.has_membership(role='manager'):
-     response.menu.append(
-         (T('Manage'),False,None,[
-         (T('Type Payment'),False,URL('typepayment','index'),[]),
-         (T('Category'),False,URL('category','index'),[]),
-         (T('Building'),False,URL('building','index'),[]),
-         (T('Devident'),False,URL('devident','index'),[]),
-         (T('Inventory'),False,URL('inventory','index'),[]),
-         (T('Priority'),False,URL('Priority','index'),[]),
-         (T('Status'),False,URL('Status','index'),[]),
-         (T('Status Pekerjaan'),False,URL('status_pekerjaan','index'),[]),
-         (T('Type Cat'),False,URL('typecat','index'),[]),
-         (T('Type Payment'),False,URL('typepayment','index'),[]),
-         ]))
+#if auth.user and auth.has_membership(role='manager'):
+#     response.menu.append()

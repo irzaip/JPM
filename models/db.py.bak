@@ -203,7 +203,7 @@ db.define_table('accounting',
     Field('vendor',requires=IS_IN_DB(db,db.vendor,'%(nama_usaha)s',error_message="Harus di isi")),
     Field('tenant',requires=IS_IN_DB(db,db.tenant,'%(nama_lengkap)s',error_message="Harus di Isi")),
     Field('unit',requires=IS_IN_DB(db,db.unit,'%(nama_unit)s',error_message="Harus di isi")),
-    Field('entry_by','text')),
+    Field('entry_by','text'),
     Field('notes', 'text'))
 
 db.define_table('workorder',
@@ -241,6 +241,20 @@ db.define_table('invoice_item',
     Field('invoice',requires=IS_IN_DB(db,db.invoice,'%(id)s',error_message="Harus di isi")),
     Field('keterangan',length=100),
     Field('jumlah','integer'))
+
+db.define_table('uploads',
+    Field('tenant',requires=IS_IN_DB(db,db.tenant,'%(nama_lengkap)s',error_message="Harus di isi")),
+    Field('jenis','string'),
+    Field('mainfile','upload'),
+    Field('thumb','upload',writable=False,readable=False),
+    )
+
+db.define_table('tesme',
+    Field('tenant',requires=IS_IN_DB(db,db.tenant,'%(nama_lengkap)s',error_message="Harus di isi"),label="Nama Tenant",comment="Mohon di isi nama lengkap"),
+    Field('jenis','string'),
+    )
+
+
 
 db.user.user.requires = IS_NOT_EMPTY()
 db.user.email.requires = [IS_EMAIL(), IS_NOT_IN_DB(db, 'user.email')]

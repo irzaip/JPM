@@ -1,57 +1,92 @@
 {{extend 'layout.html'}}
-<table class="index_table">
-<tr><td>Nama Lengkap</td><td>{{=tenant[0].tenant.nama_lengkap}}</td></tr>
+<table id="index_table">
+<tr class="hilite"><td>Nama Lengkap</td><td>{{=B(tenant[0].tenant.nama_lengkap)}}</td></tr>
 <tr><td>Alamat Lengkap</td><td>{{=tenant[0].tenant.alamat_lengkap}}</td></tr>
 <tr><td>Kota Asal</td><td>{{=tenant[0].tenant.kota_asal}}</td></tr>
-<tr><td>No Tel Selular</td><td>{{=tenant[0].tenant.no_tel_selular}}</td></tr>
+<tr class="hilite"><td>No Tel Selular</td><td>{{=tenant[0].tenant.no_tel_selular}}</td></tr>
 <tr><td>No Tel Rumah</td><td>{{=tenant[0].tenant.no_tel_rumah}}</td></tr>
 <tr><td>No Tel Kantor</td><td>{{=tenant[0].tenant.no_tel_kantor}}</td></tr>
 <tr><td>eMail</td><td>{{=tenant[0].tenant.email}}</td></tr>
 <tr><td>Tempat Tanggal Lahir</td><td>{{=tenant[0].tenant.tmp_tgl_lahir}}</td></tr>
-<tr><td>Status</td><td>{{=tenant[0].status.status}}</td></tr>
+<tr class="hilite"><td>Status</td><td>{{=tenant[0].status.status}}</td></tr>
 <tr><td>Catatan</td><td>{{=tenant[0].tenant.catatan}}</td></tr>
-<tr><td></td><td>{{=A('[Edit]',_href=URL('tenant','edit',args=tenant[0].tenant.id))}}</td></tr>
+<tr class="action"><td>{{=A('[Tambah Gambar]',_class="ui-btn ui-btn-inline ui-mini",_href=URL('tenant','uploadimage',args=tenant[0].tenant.id))}}</td><td>{{=A('[Edit]',_class="ui-btn ui-btn-inline ui-mini",_href=URL('tenant','edit',args=tenant[0].tenant.id))}}</td></tr>
 </table>
-
+<hr>
 <br>
+
 <h4>Sewa</h4>
 {{=A('Tambah',_href=URL('lease','add',vars={'tenant':tenant[0].tenant.id,'unit':unit}))}}
-<table class="view_related">
+
+<table class="view_related" data-role="table" id="table-custom-1" data-mode="columntoggle" class="ui-body-d ui-shadow table-stripe ui-responsive" data-column-btn-theme="b" data-column-btn-text="Tampilkan" data-column-popup-theme="a">
+    <thead>
 <th>Sewa Awal</th>
 <th>Sewa Akhir</th>
+<th data-priority="1">Tanggal Masuk</th>
+<th data-priority="2">Tanggal Keluar</th>
 <th>Frequency</th>
 <th>Jumlah</th>
 <th>Action</th>
+        </thead>
+    <tbody>
 {{for l in lease:}}
 <tr> 
+    
 <td>{{=l.lease.sewa_awal}} </td>
 <td>{{=l.lease.sewa_akhir}} </td>
+<td>{{=l.lease.tgl_masuk}}</td>
+<td>{{=l.lease.tgl_keluar}}</td>
 <td>{{=l.frequency.frequency}} </td>
-<td>{{=l.lease.harga_sewa}}</td>
-    <td>{{=A('[Detail]',_href=URL('lease','view',args=l.lease.id))}}
-        {{=A('[Bayar]',_href=URL('accounting','add',vars={'tenant':tenant[0].tenant.id,'unit':unit,'lease':l.lease.id,'sewaakhir':l.lease.sewa_akhir,'harga_sewa':l.lease.harga_sewa}))}}
+<td>{{=moneyfmt(Decimal(l.lease.harga_sewa))}}</td>
+    <td>{{=A('[Detail]',_class="ui-btn ui-btn-inline ui-mini",_href=URL('lease','view',args=l.lease.id))}}
+        {{=A('[Bayar]',_class="ui-btn ui-btn-inline ui-mini",_href=URL('accounting','add',vars={'tenant':tenant[0].tenant.id,'unit':unit,'lease':l.lease.id,'sewaakhir':l.lease.sewa_akhir,'harga_sewa':l.lease.harga_sewa}))}}
     
     </td>
 </tr>
 {{pass}}
+</tbody>
 </table>
+<hr>
 
 <br>
+
+
 <h4>Accounting</h4>
 {{=A('Tambah Pembayaran',_href=URL('accounting','add',vars={'tenant':tenant[0].tenant.id,'unit':unit}))}}
-<table class="view_related">
+
+<table class="view_related" data-role="table" id="table-custom-2" data-mode="columntoggle" class="ui-body-d ui-shadow table-stripe ui-responsive" data-column-btn-theme="b" data-column-btn-text="Tampilkan" data-column-popup-theme="a">
+    <thead>
     <th>Entry by</th>
     <th>Tanggal Terima</th>
     <th>Type</th>
     <th>Jumlah</th>
     <th>Notes</th>
+    <th>Action</th>
+        </thead>
+    <tbody>
 {{for a in accounting:}}
 <tr>
-    <td>{{=a.entry_by}}</td>
-    <td>{{=a.tgl_di_bayar}}</td>
-    <td>{{=a.typepayment}}</td>
-    <td>{{=a.jumlah_di_bayar}}</td>
-    <td>{{=a.notes}}</td>
+    <td>{{=a.accounting.entry_by}}</td>
+    <td>{{=a.accounting.tgl_di_bayar}}</td>
+    <td>{{=a.typepayment.tipe}}</td>
+    <td>{{=moneyfmt(Decimal(a.accounting.jumlah_di_bayar))}}</td>
+    <td>{{=a.accounting.notes}}</td>
+    <td>{{=A('[Detail]',_class="ui-btn ui-btn-inline ui-mini",_href=URL('accounting','view',args=a.accounting.id))}}</td>
+</tr>
+{{pass}}
+        </tbody>
+
+</table>
+<hr>
+<br>
+
+<h4>Uploads</h4>
+<table class="view_related">
+    <th>Jenis</th>
+    <th>File</th>
+{{for u in uploads:}}
+<tr><td>{{=u.jenis}}</td>
+    <td>{{=A('[View Image]', _href=URL('tenant','viewimage',args=u.id,vars=dict(nama=tenant[0].tenant.nama_lengkap,jenis=u.jenis)))}}</td>
 </tr>
 {{pass}}
 </table>

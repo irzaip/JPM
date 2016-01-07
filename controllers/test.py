@@ -1,0 +1,25 @@
+# coding: utf8
+# try something like
+import mymod
+
+@auth.requires_login()
+def index():
+    import datetime
+    from dateutil.relativedelta import relativedelta
+    response.title="Test"
+    response.subtitle="Macam macam test"
+
+    d1 = datetime.datetime.now().strftime("%Y-%m-%d")
+    d2 = (datetime.datetime.now() + relativedelta(months=1)).strftime("%Y-%m-%d")
+    
+    return dict(d1=d1,d2=d2)
+
+def tess():
+    message = "this is your ip :" + mymod.ip()
+    return dict(message=message)
+
+def myform():
+    form = SQLFORM.factory(
+      Field('your_name', requires=IS_NOT_EMPTY()),
+      Field('your_image', 'upload'))
+    return dict(form=form)

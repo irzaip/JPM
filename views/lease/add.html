@@ -1,2 +1,32 @@
 {{extend 'layout.html'}}
+<button onclick="getdata();">Isi data lama</button>
+
+<hr>
 {{=BEAUTIFY(response._vars)}}
+
+
+<script>
+    function getdata() {
+        
+        var xmlhttp = new XMLHttpRequest();
+        var url = "{{=URL('lease','getlast.json',vars=dict(tenant=form.vars.tenant,unit=form.vars.unit),scheme=True, host=True)}}";
+
+    xmlhttp.onreadystatechange = function() {
+    if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        var myArr = JSON.parse(xmlhttp.responseText);
+        
+        document.getElementById('lease_tgl_masuk').value=myArr.sewa_akhir;
+        document.getElementById('lease_tgl_keluar').value=myArr.sewa_akhir;
+        document.getElementById('lease_tgl_keluar').style.backgroundColor = "Yellow";
+        document.getElementById('lease_sewa_awal').value=myArr.sewa_akhir;
+        document.getElementById('lease_sewa_akhir').value=myArr.sewa_akhir;
+        document.getElementById('lease_sewa_akhir').style.backgroundColor = "Yellow";
+        document.getElementById('lease_harga_sewa').value=myArr.harga_sewa;
+        document.getElementById('lease_frequency').value=myArr.frequency;
+        alert("Jangan lupa memeriksa tanggal keluar dan sewa akhir");
+    }
+  }
+    xmlhttp.open("GET", url, true);
+    xmlhttp.send();
+ }
+</script>

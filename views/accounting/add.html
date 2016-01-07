@@ -1,2 +1,9 @@
 {{extend 'layout.html'}}
 {{=BEAUTIFY(response._vars)}}
+<script>
+ $(document).ready(function()
+ {
+    $("input#accounting_tgl_di_bayar.date").attr("data-role","date")
+    $("input#accounting_tgl_di_bayar.date").attr("data-inline","true")
+ });
+</script>
